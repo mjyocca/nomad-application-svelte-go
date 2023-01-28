@@ -14,6 +14,7 @@ job "nginx" {
     service {
       name = "nginx"
       port = "http"
+      provider = "nomad"
     }
 
     task "nginx" {
@@ -30,28 +31,7 @@ job "nginx" {
       }
 
       template {
-        data = <<EOF
-## linux use
-#  server {{ .Address }}:{{ .Port }};
-## macos / windows use:
-#  server host.docker.internal:{{ .Port }};
-
-upstream backend {
-{{ range service "frontend-app" }}
-  server host.docker.internal:{{ .Port }};
-{{ else }}server 127.0.0.1:65535; # force a 502
-{{ end }}
-}
-
-server {
-   listen 8080;
-
-   location / {
-      proxy_pass http://backend;
-   }
-}
-EOF
-
+        data = file("./config/nginx.conf")
         destination   = "local/load-balancer.conf"
         change_mode   = "signal"
         change_signal = "SIGHUP"

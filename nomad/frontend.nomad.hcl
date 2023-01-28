@@ -12,6 +12,7 @@ job "frontend-app" {
     service {
       name = "frontend-app"
       port = "http"
+      provider = "nomad"
       
 			check {
       	type     = "http"
